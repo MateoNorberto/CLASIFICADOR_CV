@@ -1,18 +1,17 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <title>Clasificador de CV</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
-    <h1>Sube tu CV en PDF</h1>
-    <form id="upload-form" method="POST" enctype="multipart/form-data">
-        <input type="file" name="cv" accept="application/pdf" required>
-        <button type="submit">Analizar</button>
+    <h1>Sube tu CV (PDF)</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="cv" accept=".pdf" required>
+        <button type="submit">Clasificar</button>
     </form>
-    <div id="resultado"></div>
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <div id="resultado" style="margin-top:20px; font-weight:bold;"></div>
+
+    <script src="/static/script.js"></script>
 </body>
 </html>

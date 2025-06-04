@@ -1,35 +1,57 @@
 from flask import Flask, render_template, request, jsonify
 import joblib
 import PyPDF2
+import docx2txt
+import pytesseract
+from PIL import Image
+import os
 
 app = Flask(__name__)
 model = joblib.load("model.pkl")
-print("Modelo cargado correctamente")  # <-- Confirmamos que el modelo se cargó bien
+print("Modelo cargado correctamente")
 
 def extract_text_from_pdf(pdf_file):
     reader = PyPDF2.PdfReader(pdf_file)
-    return "".join([page.extract_text() for page in reader.pages])
+    return "".join([page.extract_text() or "" for page in reader.pages])
+
+def extract_text_from_docx(docx_file):
+    return docx2txt.process(docx_file)
+
+def extract_text_from_txt(txt_file):
+    return txt_file.read().decode("utf-8")
+
+def extract_text_from_image(image_file):
+    image = Image.open(image_file)
+    return pytesseract.image_to_string(image)
 
 @app.route("/", methods=["GET", "POST"])
 def index():
     if request.method == "POST":
-        print("Petición POST recibida")  # << Esto confirma que el servidor recibe la petición
         try:
             file = request.files.get("cv")
-            if file and file.filename.endswith(".pdf"):
-                print(f"Archivo recibido: {file.filename}")
-                text = extract_text_from_pdf(file)
-                prediction = model.predict([text])[0]
-                probability = model.predict_proba([text]).max() * 100
-                return jsonify({"prediction": prediction, "probability": round(probability, 2)})
-            else:
-                print("Archivo inválido o no enviado")
-                return jsonify({"error": "Archivo inválido"}), 400
-        except Exception as e:
-            print(f"Error interno: {str(e)}")
-            return jsonify({"error": f"Error interno: {str(e)}"}), 500
-    return render_template("index.html")
+            if not file:
+                return jsonify({"error": "Archivo no enviado"}), 400
 
+            filename = file.filename.lower()
+            if filename.endswith(".pdf"):
+                text = extract_text_from_pdf(file)
+            elif filename.endswith(".docx"):
+                text = extract_text_from_docx(file)
+            elif filename.endswith(".txt"):
+                text = extract_text_from_txt(file)
+            elif filename.endswith((".png", ".jpg", ".jpeg")):
+                text = extract_text_from_image(file)
+            else:
+                return jsonify({"error": "Tipo de archivo no soportado"}), 400
+
+            prediction = model.predict([text])[0]
+            probability = model.predict_proba([text]).max() * 100
+            return jsonify({"prediction": prediction, "probability": round(probability, 2)})
+
+        except Exception as e:
+            return jsonify({"error": f"Error interno: {str(e)}"}), 500
+
+    return render_template("index.html")
 
 if __name__ == "__main__":
     app.run(debug=True)

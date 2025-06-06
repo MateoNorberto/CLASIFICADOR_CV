@@ -4,11 +4,24 @@ import PyPDF2
 import docx2txt
 import pytesseract
 from PIL import Image
-import os
+import re
+import nltk
+from nltk.corpus import stopwords
+
+nltk.download("stopwords")
+stop_words = set(stopwords.words("spanish"))
 
 app = Flask(__name__)
 model = joblib.load("model.pkl")
-print("Modelo cargado correctamente")
+print("Modelo cargado correctamente.")
+
+def clean_text(text):
+    text = text.lower()
+    text = re.sub(r'\S+@\S+', '', text)
+    text = re.sub(r'\d{9,}', '', text)
+    text = re.sub(r'[^a-záéíóúñ\s]', '', text)
+    tokens = [word for word in text.split() if word not in stop_words]
+    return " ".join(tokens)
 
 def extract_text_from_pdf(pdf_file):
     reader = PyPDF2.PdfReader(pdf_file)
@@ -44,9 +57,18 @@ def index():
             else:
                 return jsonify({"error": "Tipo de archivo no soportado"}), 400
 
-            prediction = model.predict([text])[0]
-            probability = model.predict_proba([text]).max() * 100
-            return jsonify({"prediction": prediction, "probability": round(probability, 2)})
+            cleaned_text = clean_text(text)
+            prediction = model.predict([cleaned_text])[0]
+            probability = model.predict_proba([cleaned_text]).max() * 100
+
+            # Placeholder para cargo_detectado
+            cargo_detectado = "No implementado aún"
+
+            return jsonify({
+                "prediction": prediction,
+                "probability": round(probability, 2),
+                "cargo": cargo_detectado
+            })
 
         except Exception as e:
             return jsonify({"error": f"Error interno: {str(e)}"}), 500

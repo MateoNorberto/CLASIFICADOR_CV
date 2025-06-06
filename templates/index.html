@@ -1,17 +1,39 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>Clasificador de CV</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
-    <h1>Sube tu CV (PDF, Word, TXT o imagen)</h1>
-    <form id="upload-form" enctype="multipart/form-data">
-        <input type="file" name="cv" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" required>
+  <div id="main-container">
+    <!-- Columna izquierda: vista previa -->
+    <div id="preview-container">
+      <h2>Vista previa</h2>
+      <div id="preview">
+        <!-- imágenes, textos, etc -->
+      </div>
+    </div>
+
+    <!-- Columna derecha: formulario, resultado e historial -->
+    <div id="right-container">
+      <h1>Sube tu CV (PDF, Word, TXT o imagen)</h1>
+
+      <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="cv" accept=".pdf,.docx,.txt,.png,.jpg,.jpeg" required />
         <button type="submit">Clasificar</button>
-    </form>
-    <div id="resultado" style="margin-top:20px; font-weight:bold;"></div>
-    <script src="/static/script.js"></script>
+        <div id="progress-bar"></div>
+      </form>
+
+      <div id="resultado"></div>
+
+      <div id="historial">
+        <h3>📚 Historial de Archivos</h3>
+        <ul id="lista-historial"></ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
 </body>
 </html>
